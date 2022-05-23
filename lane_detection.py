@@ -24,7 +24,7 @@ import carla
 def main():
     actor_list = []
     try:
-        client = carla.Client('127.0.0.1', 2000)
+        client = carla.Client('127.0.0.1', 3000)
         client.set_timeout(5.0)
         print("connected")
         world = client.get_world()
@@ -70,6 +70,7 @@ def main():
         for actor in actor_list:
             actor.destroy()
         print('done.')
+
 
 if __name__ == '__main__':
     main()
