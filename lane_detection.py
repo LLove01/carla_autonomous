@@ -36,24 +36,27 @@ def process_image(image):
     # cutting out alpha chanel
     img = img[:, :, :3]
 
-    img = show_inference(detection_model, img)
-
-    cv2.imshow('rgb camera', img)
-    cv2.waitKey(100)
-
-    # stencil = np.zeros_like(img[:, :, 0])
-    # polygon = np.array([[50, 570], [380, 360], [560, 360], [780, 570]])
-    # cv2.fillConvexPoly(stencil, polygon, (255))
-    # mask_img = cv2.bitwise_and(img[:, :, 0], img[:, :, 0], mask=stencil)
+    stencil = np.zeros_like(img[:, :, 0])
+    polygon = np.array([[50, 570], [380, 360], [560, 360], [780, 570]])
+    cv2.fillConvexPoly(stencil, polygon, (255))
+    mask_img = cv2.bitwise_and(img[:, :, 0], img[:, :, 0], mask=stencil)
     # cv2.imshow('Mask image', mask_img)
-    # ret, thresh = cv2.threshold(mask_img, 220, 255, cv2.THRESH_BINARY)
+    ret, thresh = cv2.threshold(mask_img, 220, 255, cv2.THRESH_BINARY)
     # cv2.imshow('Tresh', thresh)
-    # lines = cv2.HoughLinesP(thresh, 1, np.pi/180, 30, maxLineGap=200)
+    lines = cv2.HoughLinesP(thresh, 1, np.pi/180, 30, maxLineGap=200)
 
-    # if lines is not None:
-    #     for line in lines:
-    #         x1, y1, x2, y2 = line[0]
-    #         cv2.line(img, (x1, y1), (x2, y2), (255, 0, 0), 3)
+    img_gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+
+    if lines is not None:
+        for line in lines:
+            x1, y1, x2, y2 = line[0]
+            cv2.line(img_gray, (x1, y1), (x2, y2), (255, 0, 0), 3)
+
+    img = show_inference(detection_model, img)
+    cv2.imshow("rgb cam", img)
+    # cv2.imshow("gray image", img_gray)
+    cv2.waitKey(50)
+    return img
 
 
 def main():
@@ -91,7 +94,7 @@ def main():
         while True:
             waypoints = world.get_map().get_waypoint(vehicle.get_location())
             waypoint = np.random.choice(waypoints.next(0.3))
-            control_signal = vehicle_controller.run_step(5, waypoint)
+            control_signal = vehicle_controller.run_step(30, waypoint)
             vehicle.apply_control(control_signal)
 
     finally:
