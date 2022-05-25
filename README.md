@@ -28,3 +28,13 @@ help with instalation and compilation
 # additions 
 package must be installed:
     pip install object_detection_api
+
+# running the code 
+carla 
+    .\CarlaUE4 -dx11 -quality-level=Low -carla-port=3000
+python api 
+    first activate local python 3.8 environment
+        py38_env\Scripts\activate
+    cd to code folder 
+        python control_node.py
+
