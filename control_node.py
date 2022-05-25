@@ -23,12 +23,6 @@ import carla
 
 def reset(self):
     print("Collision! Respawning ...")
-    # self.client = carla.Client('127.0.0.1', 3000)
-    # self.client.set_timeout(5.0)
-    # self.world = self.client.get_world()
-    # self.map = self.world.get_map()
-    # self.bp_lib = self.world.get_blueprint_library()
-    # creating and spawning a vehicle
     self.vehicle_bp = self.bp_lib.filter('cybertruck')[0]
     # spawn_point = carla.Transform(carla.Location(
     #     x=-75.4, y=-1.0, z=15), carla.Rotation(pitch=0, yaw=180, roll=0))
@@ -38,10 +32,6 @@ def reset(self):
         self.vehicle_bp, self.spawn_point)
     self.actor_list.append(self.vehicle)
     print("Car spawned")
-
-    # self.vehicle_controller = PID_Controller(self.vehicle, args_acceleration={
-    # 'K_P': 1, 'K_D': 0.0, 'K_I': 0.0}, args_direction = {'K_P': 1, 'K_D': 0.0, 'K_I': 0.0})
-
     # rgb camera
     camera_bp = self.bp_lib.find('sensor.camera.rgb')
     camera_bp.set_attribute('image_size_x', '800')
@@ -52,7 +42,6 @@ def reset(self):
         camera_bp, camera_location, attach_to=self.vehicle)
     self.camera.listen(lambda image: process_image(image))
     self.actor_list.append(self.camera)
-
     # collision sensor
     collision_bp = self.world.get_blueprint_library().find('sensor.other.collision')
     self.collision_sensor = self.world.spawn_actor(
