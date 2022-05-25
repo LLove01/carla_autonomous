@@ -11,7 +11,7 @@ carla python api reference
 
 
 # object detection 
-current version uses tensorflow object detection api
+current version uses tensorflow object detection api 
     tensorflow/models repo: 
         https://github.com/tensorflow/models
     protobuf
@@ -24,3 +24,7 @@ current version uses tensorflow object detection api
 
 help with instalation and compilation 
     https://tensorflow-object-detection-api-tutorial.readthedocs.io/en/latest/install.html#protobuf-installation-compilation
+
+# additions 
+package must be installed:
+    pip install object_detection_api
