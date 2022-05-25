@@ -22,21 +22,14 @@ import carla
 
 
 def process_image(image):
-    # try:
-    #     image.save_to_disk('output/%.6d' % image.frame,
-    #                        carla.ColorConverter.CityScapesPalette)
-    #     segmentation_img = cv2.imread('output/%.6d' % image.frame)
-    #     cv2.imshow('', segmentation_img)
-    #     cv2.waitKey(1)
-    # except:
-    #     print('Error processing image.')
     # rgb camera returns 4 chanels
     image = np.array(image.raw_data)
     img = image.reshape((600, 800, 4))
     # cutting out alpha chanel
     img = img[:, :, :3]
-
+    # black background
     stencil = np.zeros_like(img[:, :, 0])
+    # Defining area of interest
     polygon = np.array([[50, 570], [380, 360], [560, 360], [780, 570]])
     cv2.fillConvexPoly(stencil, polygon, (255))
     mask_img = cv2.bitwise_and(img[:, :, 0], img[:, :, 0], mask=stencil)
@@ -45,13 +38,13 @@ def process_image(image):
     # cv2.imshow('Tresh', thresh)
     lines = cv2.HoughLinesP(thresh, 1, np.pi/180, 30, maxLineGap=200)
 
+    # converting rgb to gray
     img_gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-
     if lines is not None:
         for line in lines:
             x1, y1, x2, y2 = line[0]
             cv2.line(img_gray, (x1, y1), (x2, y2), (255, 0, 0), 3)
-
+    # tf object detection
     img = show_inference(detection_model, img)
     cv2.imshow("rgb cam", img)
     # cv2.imshow("gray image", img_gray)
