@@ -105,6 +105,6 @@ def show_inference(model, image):
         use_normalized_coordinates=True,
         line_thickness=8)
 
-    display(Image.fromarray(image_np))
+    # display(Image.fromarray(image_np))
     # display_image(image_np)
     return image_np
