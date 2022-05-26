@@ -1,7 +1,7 @@
 import glob
 import os
 import sys
-from matplotlib import image
+import matplotlib.pyplot as plt
 from matplotlib.colors import ColorConverter
 import numpy as np
 import cv2
@@ -10,6 +10,7 @@ import random
 
 from pid_controller import *
 from tf_detection import *
+from lane_detection import *
 
 try:
     sys.path.append(glob.glob('../carla/dist/carla-*%d.%d-%s.egg' % (
@@ -27,7 +28,7 @@ def reset(self):
     # spawn_point = carla.Transform(carla.Location(
     #     x=-75.4, y=-1.0, z=15), carla.Rotation(pitch=0, yaw=180, roll=0))
     # spawn_point = random.choice(world.get_map().get_spawn_points())
-    self.spawn_point = self.world.get_map().get_spawn_points()[3]
+    self.spawn_point = self.world.get_map().get_spawn_points()[7]
     self.vehicle = self.world.spawn_actor(
         self.vehicle_bp, self.spawn_point)
     self.actor_list.append(self.vehicle)
@@ -62,36 +63,12 @@ def process_image(image):
     img = image.reshape((600, 800, 4))
     # cutting out alpha chanel
     img = img[:, :, :3]
-    # black background
-    stencil = np.zeros_like(img[:, :, 0])
-    # Defining area of interest
-    polygon = np.array([[50, 570], [50, 360], [780, 360], [780, 570]])
-    cv2.fillConvexPoly(stencil, polygon, (255))
-    mask_img = cv2.bitwise_and(img[:, :, 0], img[:, :, 0], mask=stencil)
-    # cv2.imshow('Mask image', mask_img)
-    ret, thresh = cv2.threshold(mask_img, 210, 255, cv2.THRESH_BINARY)
-
-    #  Opening morphological operation
-    ker1 = np.ones((3, 3), np.uint8)
-    filtered = cv2.morphologyEx(thresh, cv2.MORPH_DILATE, ker1)
-    # cv2.imshow('Dilated', filtered)
-
-    blur = cv2.GaussianBlur(thresh, (13, 13), 0)
-    thresh = cv2.threshold(blur, 100, 255, cv2.THRESH_BINARY)[1]
-
-    cv2.imshow('Tresh', thresh)
-    lines = cv2.HoughLinesP(thresh, 1, np.pi/180, 30, maxLineGap=200)
-
-    # converting rgb to gray
-    img_gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-    if lines is not None:
-        for line in lines:
-            x1, y1, x2, y2 = line[0]
-            cv2.line(img_gray, (x1, y1), (x2, y2), (255, 0, 0), 3)
-    # tf object detection
-    img = show_inference(detection_model, img)
-    # cv2.imshow("rgb cam", img)
-    # cv2.imshow("gray image", img_gray)
+    lanes_img = find_lanes(img)
+    # # tf object detection
+    # img = show_inference(detection_model, img)
+    # # cv2.imshow("rgb cam", img)
+    # # cv2.imshow("gray image", img_gray)
+    cv2.imshow('lanes', lanes_img)
     cv2.waitKey(50)
     return img
 
@@ -143,7 +120,7 @@ class Cybertruck:
             while True:
                 waypoints = self.world.get_map().get_waypoint(self.vehicle.get_location())
                 waypoint = np.random.choice(waypoints.next(0.3))
-                control_signal = self.vehicle_controller.run_step(30, waypoint)
+                control_signal = self.vehicle_controller.run_step(10, waypoint)
                 self.vehicle.apply_control(control_signal)
         finally:
             print('destroying actors')
